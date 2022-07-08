@@ -276,7 +276,7 @@ static int pack_entry_find(struct git_pack_entry *e, struct pack_backend *backen
 		git_midx_entry_find(&midx_entry, backend->midx, oid, GIT_OID_SHA1_HEXSIZE) == 0 &&
 		midx_entry.pack_index < git_vector_length(&backend->midx_packs)) {
 		e->offset = midx_entry.offset;
-		git_oid_cpy(&e->sha1, &midx_entry.sha1);
+		git_oid_cpy(&e->id, &midx_entry.sha1);
 		e->p = git_vector_get(&backend->midx_packs, midx_entry.pack_index);
 		return 0;
 	}
@@ -318,9 +318,9 @@ static int pack_entry_find_prefix(
 			return error;
 		if (!error && midx_entry.pack_index < git_vector_length(&backend->midx_packs)) {
 			e->offset = midx_entry.offset;
-			git_oid_cpy(&e->sha1, &midx_entry.sha1);
+			git_oid_cpy(&e->id, &midx_entry.sha1);
 			e->p = git_vector_get(&backend->midx_packs, midx_entry.pack_index);
-			git_oid_cpy(&found_full_oid, &e->sha1);
+			git_oid_cpy(&found_full_oid, &e->id);
 			found = true;
 		}
 	}
@@ -330,9 +330,9 @@ static int pack_entry_find_prefix(
 		if (error == GIT_EAMBIGUOUS)
 			return error;
 		if (!error) {
-			if (found && git_oid_cmp(&e->sha1, &found_full_oid))
+			if (found && git_oid_cmp(&e->id, &found_full_oid))
 				return git_odb__error_ambiguous("found multiple pack entries");
-			git_oid_cpy(&found_full_oid, &e->sha1);
+			git_oid_cpy(&found_full_oid, &e->id);
 			found = true;
 		}
 	}
@@ -345,9 +345,9 @@ static int pack_entry_find_prefix(
 		if (error == GIT_EAMBIGUOUS)
 			return error;
 		if (!error) {
-			if (found && git_oid_cmp(&e->sha1, &found_full_oid))
+			if (found && git_oid_cmp(&e->id, &found_full_oid))
 				return git_odb__error_ambiguous("found multiple pack entries");
-			git_oid_cpy(&found_full_oid, &e->sha1);
+			git_oid_cpy(&found_full_oid, &e->id);
 			found = true;
 			backend->last_found = p;
 		}
@@ -621,7 +621,7 @@ static int pack_backend__read_prefix(
 			*buffer_p = raw.data;
 			*len_p = raw.len;
 			*type_p = raw.type;
-			git_oid_cpy(out_oid, &e.sha1);
+			git_oid_cpy(out_oid, &e.id);
 		}
 	}
 
@@ -642,7 +642,7 @@ static int pack_backend__exists_prefix(
 	struct git_pack_entry e = {0};
 
 	error = pack_entry_find_prefix(&e, pb, short_id, len);
-	git_oid_cpy(out, &e.sha1);
+	git_oid_cpy(out, &e.id);
 	return error;
 }
 

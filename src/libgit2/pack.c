@@ -186,9 +186,9 @@ static int cache_add(
 
 static void pack_index_free(struct git_pack_file *p)
 {
-	if (p->oids) {
-		git__free(p->oids);
-		p->oids = NULL;
+	if (p->ids) {
+		git__free(p->ids);
+		p->ids = NULL;
 	}
 	if (p->index_map.data) {
 		git_futils_mmap_free(&p->index_map);
@@ -1070,7 +1070,7 @@ void git_packfile_free(struct git_pack_file *p, bool unlink_packfile)
 
 	pack_index_free(p);
 
-	git__free(p->bad_object_sha1);
+	git__free(p->bad_object_ids);
 
 	git_mutex_free(&p->bases.lock);
 	git_mutex_free(&p->mwf.lock);
@@ -1312,7 +1312,7 @@ int git_pack_foreach_entry(
 
 	index += 4 * 256;
 
-	if (p->oids == NULL) {
+	if (p->ids == NULL) {
 		git_vector offsets, oids;
 
 		if ((error = git_vector_init(&oids, p->num_objects, NULL))) {
@@ -1341,7 +1341,7 @@ int git_pack_foreach_entry(
 		}
 
 		git_vector_free(&offsets);
-		p->oids = (unsigned char **)git_vector_detach(NULL, NULL, &oids);
+		p->ids = (unsigned char **)git_vector_detach(NULL, NULL, &oids);
 	}
 
 	/*
@@ -1362,7 +1362,7 @@ int git_pack_foreach_entry(
 			git_array_clear(oids);
 			GIT_ERROR_CHECK_ALLOC(oid);
 		}
-		git_oid__fromraw(oid, p->oids[i], GIT_OID_SHA1);
+		git_oid__fromraw(oid, p->ids[i], GIT_OID_SHA1);
 	}
 
 	git_mutex_unlock(&p->lock);
@@ -1450,8 +1450,12 @@ cleanup:
 	return error;
 }
 
-int git_pack__lookup_sha1(const void *oid_lookup_table, size_t stride, unsigned lo,
-		unsigned hi, const unsigned char *oid_prefix)
+int git_pack__lookup_id(
+	const void *oid_lookup_table,
+	size_t stride,
+	unsigned lo,
+	unsigned hi,
+	const unsigned char *oid_prefix)
 {
 	const unsigned char *base = oid_lookup_table;
 
@@ -1523,7 +1527,7 @@ static int pack_entry_find_offset(
 		short_oid->id[0], short_oid->id[1], short_oid->id[2], lo, hi, p->num_objects);
 #endif
 
-	pos = git_pack__lookup_sha1(index, stride, lo, hi, short_oid->id);
+	pos = git_pack__lookup_id(index, stride, lo, hi, short_oid->id);
 
 	if (pos >= 0) {
 		/* An object matching exactly the oid was found */
@@ -1597,7 +1601,7 @@ int git_pack_entry_find(
 	if (len == GIT_OID_SHA1_HEXSIZE && p->num_bad_objects) {
 		unsigned i;
 		for (i = 0; i < p->num_bad_objects; i++)
-			if (git_oid__cmp(short_oid, &p->bad_object_sha1[i]) == 0)
+			if (git_oid__cmp(short_oid, &p->bad_object_ids[i]) == 0)
 				return packfile_error("bad object found in packfile");
 	}
 
@@ -1630,6 +1634,6 @@ int git_pack_entry_find(
 	e->offset = offset;
 	e->p = p;
 
-	git_oid_cpy(&e->sha1, &found_oid);
+	git_oid_cpy(&e->id, &found_oid);
 	return 0;
 }

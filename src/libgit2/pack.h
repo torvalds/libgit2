@@ -99,13 +99,13 @@ struct git_pack_file {
 
 	uint32_t num_objects;
 	uint32_t num_bad_objects;
-	git_oid *bad_object_sha1; /* array of git_oid */
+	git_oid *bad_object_ids; /* array of git_oid */
 
 	int index_version;
 	git_time_t mtime;
 	unsigned pack_local:1, pack_keep:1, has_cache:1;
 	git_oidmap *idx_cache;
-	unsigned char **oids;
+	unsigned char **ids;
 
 	git_pack_cache bases; /* delta base cache */
 
@@ -125,12 +125,16 @@ struct git_pack_file {
  * file (stride = 24), whereas files with version 2 store them in a contiguous
  * flat array (stride = 20).
  */
-int git_pack__lookup_sha1(const void *oid_lookup_table, size_t stride, unsigned lo,
-		unsigned hi, const unsigned char *oid_prefix);
+int git_pack__lookup_id(
+	const void *id_lookup_table,
+	size_t stride,
+	unsigned lo,
+	unsigned hi,
+	const unsigned char *id_prefix);
 
 struct git_pack_entry {
 	off64_t offset;
-	git_oid sha1;
+	git_oid id;
 	struct git_pack_file *p;
 };
 
@@ -179,7 +183,7 @@ int git_packfile_alloc(struct git_pack_file **pack_out, const char *path);
 int git_pack_entry_find(
 		struct git_pack_entry *e,
 		struct git_pack_file *p,
-		const git_oid *short_oid,
+		const git_oid *short_id,
 		size_t len);
 int git_pack_foreach_entry(
 		struct git_pack_file *p,
