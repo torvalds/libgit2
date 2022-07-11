@@ -179,7 +179,8 @@ int git_indexer_new(
 	if (fd < 0)
 		goto cleanup;
 
-	error = git_packfile_alloc(&idx->pack, git_str_cstr(&tmp_path));
+	/* TODO: SHA256 */
+	error = git_packfile_alloc(&idx->pack, git_str_cstr(&tmp_path), 0);
 	git_str_dispose(&tmp_path);
 
 	if (error < 0)
