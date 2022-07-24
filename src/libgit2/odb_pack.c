@@ -96,24 +96,24 @@ struct pack_writepack {
  *	--------------------------------------------------
  *
  * # pack_backend__exists / pack_backend__exists_prefix
- * | Check if the given SHA1 oid (or a SHA1 oid prefix) exists in any of the
+ * | Check if the given oid (or an oid prefix) exists in any of the
  * | packs that have been loaded for our ODB.
  * |
  * |-# pack_entry_find / pack_entry_find_prefix
- *   | If there is a multi-pack-index present, search the SHA1 oid in that
+ *   | If there is a multi-pack-index present, search the oid in that
  *   | index first. If it is not found there, iterate through all the unindexed
  *   | packs that have been preloaded (starting by the pack where the latest
  *   | object was found) to try to find the OID in one of them.
  *   |
  *   |-# git_midx_entry_find
- *   |   Search for the SHA1 oid in the multi-pack-index. See
+ *   |   Search for the oid in the multi-pack-index. See
  *   |   <https://github.com/git/git/blob/master/Documentation/technical/pack-format.txt>
  *   |   for specifics on the multi-pack-index format and how do we find
  *   |   entries in it.
  *   |
  *   |-# git_pack_entry_find
- *     | Check the index of an individual unindexed pack to see if the SHA1
- *     | OID can be found. If we can find the offset to that SHA1 inside of the
+ *     | Check the index of an individual unindexed pack to see if the
+ *     | OID can be found. If we can find the offset to that inside of the
  *     | index, that means the object is contained inside of the packfile and
  *     | we can stop searching. Before returning, we verify that the
  *     | packfile behind the index we are searching still exists on disk.
@@ -142,13 +142,13 @@ struct pack_writepack {
  *	--------------------------------------------------
  *
  * # pack_backend__read / pack_backend__read_prefix
- * | Check if the given SHA1 oid (or a SHA1 oid prefix) exists in any of the
+ * | Check if the given oid (or an oid prefix) exists in any of the
  * | packs that have been loaded for our ODB. If it does, open the packfile and
  * | read from it.
  * |
  * |-# git_packfile_unpack
  *     Armed with a packfile and the offset within it, we can finally unpack
- *     the object pointed at by the SHA1 oid. This involves mmapping part of
+ *     the object pointed at by the oid. This involves mmapping part of
  *     the `.pack` file, and uncompressing the object within it (if it is
  *     stored in the undelfitied representation), or finding a base object and
  *     applying some deltas to its uncompressed representation (if it is stored
@@ -178,7 +178,7 @@ static int pack_entry_find(struct git_pack_entry *e,
  * a prefix of an identifier.
  * Sets GIT_EAMBIGUOUS if short oid is ambiguous.
  * This method assumes that len is between
- * GIT_OID_MINPREFIXLEN and GIT_OID_SHA1_HEXSIZE.
+ * GIT_OID_MINPREFIXLEN and the hexsize for the hash type.
  */
 static int pack_entry_find_prefix(
 	struct git_pack_entry *e,
